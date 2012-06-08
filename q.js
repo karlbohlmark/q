@@ -183,20 +183,18 @@ Q.prototype.addClass = function(classname){
 };
 
 Q.prototype.height = function(val){
+    var elem;
     if(val !== void(0)){
         for(var i=0; i<this.elements.length; i++){
-            var elem = this.elements[i];
+            elem = this.elements[i];
             elem.style.height = val + 'px';
         }
         return this;
     }
-    var elem = this.elements[0];
+    elem = this.elements[0];
     if(elem instanceof Window){
-        console.log('height return window', elem.innerHeight);
         return elem.innerHeight;
     }else{
-        console.log('height return', elem.clientHeight);
-        if(elem.clientHeight==0) debugger;
         return elem.clientHeight;
     }
 };
@@ -211,8 +209,9 @@ Q.prototype.unbind = function(event, handler){
 };
 
 Q.prototype.trigger = function(eventName, eventData){
+    console.log('trigger', eventName);
     var evt = document.createEvent('CustomEvent');
-    evt.initCustomEvent(eventName, false, false, null);
+    evt.initCustomEvent(eventName, true, false, null);
     for(var i = 0; i<this.elements.length; i++){
         var elem = this.elements[i];
         elem.dispatchEvent(evt);
@@ -277,7 +276,6 @@ Q.prototype.appendTo = function(selectorOrElement){
 };
 
 Q.prototype.attr = function(attr, val){
-    console.log('attr', attr, val);
     var elem, i;
     if(typeof attr === 'object'){
         for(i = 0; i<this.elements.length; i++){
@@ -317,7 +315,13 @@ Q.prototype.on = function(event, handler){
 
     for(var i = 0;i<this.elements.length; i++){
         var elem = this.elements[i];
-        elem.addEventListener('event', eventHandler.bind(null, elem));
+        var evt = event;
+        var period = evt.indexOf('.');
+        if(period!=-1){
+            evt = evt.substr(0, period);
+        }
+        console.log('addEventListener', evt);
+        elem.addEventListener(evt, eventHandler.bind(null, elem));
     }
     return this;
 };
