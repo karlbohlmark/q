@@ -126,9 +126,14 @@ Q.prototype.find = function(selector){
 };
 
 Q.prototype.css = function(name, value){
+    console.log('css', name, value);
+
     var setStyleProp = function(elem, prop, val){
         var propertyMap = {
-            'background-color': 'backgroundColor'
+            'background-color': 'backgroundColor',
+            'border-color': 'borderColor',
+            'border-width': 'borderWidth',
+            'background-position': 'backgroundPosition'
         };
         if(propertyMap.hasOwnProperty(prop)){
             prop = propertyMap[prop];
@@ -177,11 +182,21 @@ Q.prototype.addClass = function(classname){
     return this;
 };
 
-Q.prototype.height = function(){
+Q.prototype.height = function(val){
+    if(val !== void(0)){
+        for(var i=0; i<this.elements.length; i++){
+            var elem = this.elements[i];
+            elem.style.height = val + 'px';
+        }
+        return this;
+    }
     var elem = this.elements[0];
     if(elem instanceof Window){
+        console.log('height return window', elem.innerHeight);
         return elem.innerHeight;
     }else{
+        console.log('height return', elem.clientHeight);
+        if(elem.clientHeight==0) debugger;
         return elem.clientHeight;
     }
 };
@@ -206,7 +221,7 @@ Q.prototype.trigger = function(eventName, eventData){
 
 Q.prototype.delegate = function(selector, event, handler){
     var me = this;
-    this.on('event', function(e){
+    this.on(event, function(e){
         var dispatchFor = this.querySelectorAll(selector);
         for(var i = 0; i<dispatchFor.length; i++){
             var elem = dispatchFor[i];
@@ -262,6 +277,7 @@ Q.prototype.appendTo = function(selectorOrElement){
 };
 
 Q.prototype.attr = function(attr, val){
+    console.log('attr', attr, val);
     var elem, i;
     if(typeof attr === 'object'){
         for(i = 0; i<this.elements.length; i++){
@@ -290,9 +306,18 @@ Q.prototype.attr = function(attr, val){
 };
 
 Q.prototype.on = function(event, handler){
+    var me = this;
+    var eventHandler = function(elem, e){
+        var result = handler.call(elem, e);
+        if(result === false){
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    };
+
     for(var i = 0;i<this.elements.length; i++){
         var elem = this.elements[i];
-        elem.addEventListener('event', handler);
+        elem.addEventListener('event', eventHandler.bind(null, elem));
     }
     return this;
 };
