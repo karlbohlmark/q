@@ -63,6 +63,29 @@ var httpGet = function(url, success){
     result.then(success);
 };
 
+var ajax = function(options){
+    var method = 'GET', url, data;
+    if(options.type){
+        method = options.type;
+    }
+
+    if(options.data){
+        data = options.data;
+    }
+
+    url = options.url;
+
+    var request = http(method, url, data);
+    if(options.success){
+        request.then(options.success);
+    }
+
+    if(options.error){
+        request.fail(options.error);
+    }
+    return request;
+};
+
 var http = function(method, url, data){
     var deferred = new Deferred();
     var xhr = new XMLHttpRequest(), result;
@@ -87,6 +110,8 @@ var http = function(method, url, data){
 };
 
 q.get = httpGet;
+
+q.ajax = ajax;
 
 var Q = function(elements, selector){
     this.elements = elements;
@@ -211,6 +236,7 @@ Q.prototype.unbind = function(event, handler){
 Q.prototype.trigger = function(eventName, eventData){
     console.log('trigger', eventName);
     var evt = document.createEvent('CustomEvent');
+    evt.data = eventData;
     evt.initCustomEvent(eventName, true, false, null);
     for(var i = 0; i<this.elements.length; i++){
         var elem = this.elements[i];
@@ -304,9 +330,20 @@ Q.prototype.attr = function(attr, val){
 };
 
 Q.prototype.on = function(event, handler){
-    var me = this;
+    var me = this, result;
     var eventHandler = function(elem, e){
-        var result = handler.call(elem, e);
+        if(e.data){
+            if(!Array.isArray(e.data)){
+                e = [e.data];
+            }else{
+                e.data.unshift(e);
+                var origEvt = e;
+                e = e.data;
+                origEvt.data = null;
+            }
+        }
+        result = handler.apply(elem, e);
+
         if(result === false){
             e.preventDefault();
             e.stopPropagation();
