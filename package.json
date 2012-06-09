@@ -1,0 +1,12 @@
+{
+  "author": "Karl Böhlmark <karl@radiantbits.se>",
+  "name": "q",
+  "description": "jq lookalike",
+  "version": "0.0.0",
+  "dependencies": {},
+  "devDependencies": ["porter"],
+  "optionalDependencies": {},
+  "engines": {
+    "node": "*"
+  }
+}
